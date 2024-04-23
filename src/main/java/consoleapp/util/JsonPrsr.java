@@ -9,32 +9,32 @@ import java.nio.file.Paths;
 
 public class JsonPrsr {
 
-  private static JSONObject parser(String jsonFileName) {
-    try {
-      String content = new String(Files.readAllBytes(Paths.get(jsonFileName)));
-      JSONObject room = new JSONObject(content);
+    private static JSONObject parser(String jsonFileName) {
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(jsonFileName)));
+            JSONObject room = new JSONObject(content);
 
-      return room;
+            return room;
 
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
-  }
 
-  public static Accommodation getAccomodationObject(String jsonFileName) {
-    JSONObject room = parser(jsonFileName);
-    return new Accommodation(
-        room.getString("roomName"),
-        room.getInt("noOfPersons"),
-        room.getString("area"),
-        room.getInt("stars"),
-        room.getInt("noOfReviews"));
-  }
+    public static Accommodation getAccomodationObject(String jsonFileName) {
+        JSONObject room = parser(jsonFileName);
+        return new Accommodation(
+                room.getString("roomName"),
+                room.getInt("noOfPersons"),
+                room.getString("area"),
+                room.getInt("stars"),
+                room.getInt("noOfReviews"));
+    }
 
-  public static void main(String args[]) {
-    System.out.println(
-        getAccomodationObject("src\\main\\java\\consoleapp\\rooms.json"));
+    public static void main(String args[]) {
+        System.out.println(
+                getAccomodationObject("src\\main\\java\\consoleapp\\rooms.json"));
 
-  }
+    }
 }

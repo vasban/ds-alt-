@@ -1,21 +1,34 @@
 package model;
 
-public class Request {
+import java.io.Serializable;
+import java.util.UUID;
 
-    private String code;
+public class Request implements Serializable {
+
+    private UUID id;
+    private String action;
     private Accommodation accommodation;
 
-    public Request(String code, Accommodation accommodation) {
-        this.code = code;
+    public Request(String action, Accommodation accommodation) {
+        this.id = UUID.randomUUID();
+        this.action = action;
         this.accommodation = accommodation;
     }
 
-    public String getCode() {
-        return code;
+    public UUID getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 
     public Accommodation getAccommodation() {
@@ -24,5 +37,14 @@ public class Request {
 
     public void setAccommodation(Accommodation accommodation) {
         this.accommodation = accommodation;
+    }
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                "id=" + id +
+                ", action='" + action + '\'' +
+                ", accommodation=" + accommodation +
+                '}';
     }
 }

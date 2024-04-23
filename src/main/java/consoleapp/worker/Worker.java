@@ -1,37 +1,50 @@
 package worker;
 
 import model.Accommodation;
+import model.Request;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class Worker {
+public class Worker extends Thread {
 
-    private final String host;
     private final int port;
     private final ArrayList<Accommodation> accommodations = new ArrayList<>();
 
-    public static void main(String [] args) {
-        Worker worker = new Worker(args[0], Integer.parseInt(args[1]));
-        worker.run();
-    }
+    private Socket masterSocket;
 
-    public Worker(String host, int port){
-        this.host = host;
+    public Worker(int port) {
         this.port = port;
     }
 
+    @Override
     public void run() {
-        try (Socket requestSocket = new Socket(host,port);
-             ObjectOutputStream output = new ObjectOutputStream(requestSocket.getOutputStream());
-             ObjectInputStream input = new ObjectInputStream(requestSocket.getInputStream())
-        ) {
-            Accommodation accommodation = (Accommodation) input.readObject();
-            accommodations.add(accommodation);
-        } catch(Exception exception) {
-            System.out.println("Unexpected exception");
+        try (ServerSocket serverSocket = new ServerSocket(this.port)) {
+            this.masterSocket = serverSocket.accept();
+            System.out.println("Master is connected to worker with port " + this.port);
+
+            while (true) {
+                acceptRequest();
+            }
+        } catch (IOException io) {
+            System.out.println("Failed to initiate server socket for port " + port);
+        }
+    }
+
+    private void acceptRequest() {
+        try {
+            ObjectOutputStream output = new ObjectOutputStream(this.masterSocket.getOutputStream());
+            ObjectInputStream input = new ObjectInputStream(this.masterSocket.getInputStream());
+            Request request = (Request) input.readObject();
+            System.out.println(request);
+        } catch (IOException exception) {
+            System.out.println("acceptRequest io error");
+        } catch (ClassNotFoundException exception) {
+            System.out.println("acceptRequest class error");
         }
     }
 }

@@ -8,50 +8,46 @@ import java.util.Scanner;
 
 public class ManagerApp {
 
-    private Scanner input;
+    private static final String DEFAULT_MASTER_HOST = "localhost";
+    private static final int DEFAULT_MASTER_PORT = 50000;
 
-    private final String host;
-    private final int port;
     private ManagerAppService managerAppService;
+    private ObjectInputStream input;
+    private ObjectOutputStream output;
 
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
+    private Scanner scanner;
 
     public static void main(String[] args) {
-        ManagerApp managerApp = new ManagerApp(args[0], Integer.parseInt(args[1]));
-        managerApp.start();
+        ManagerApp managerApp = new ManagerApp();
+        managerApp.init();
     }
 
-    public ManagerApp(String host, int port){
-        this.host = host;
-        this.port = port;
-    }
-
-    private void start() {
-        try (Socket requestSocket = new Socket(host,port)) {
-            objectOutputStream = new ObjectOutputStream(requestSocket.getOutputStream());
-            objectInputStream = null;
-            managerAppService = new ManagerAppService(objectInputStream, objectOutputStream);
+    private void init() {
+        try (Socket requestSocket = new Socket(DEFAULT_MASTER_HOST, DEFAULT_MASTER_PORT)) {
+            output = new ObjectOutputStream(requestSocket.getOutputStream());
+            input = new ObjectInputStream(requestSocket.getInputStream());
+            managerAppService = new ManagerAppService(input, output);
             mainMenu();
-        } catch(Exception exception) {
+        } catch (Exception exception) {
             System.out.println("Unexpected exception");
         } finally {
             try {
-                objectInputStream.close();
-                objectOutputStream.close();
+                if (input != null) {
+                    input.close();
+                }
+                if (output != null) {
+                    output.close();
+                }
             } catch (Exception exception) {
-                System.out.println("Soy milk");
+                System.out.println("Failure while closing streams");
             }
         }
     }
 
     private void mainMenu() throws IOException {
-        input = new Scanner(System.in);
-        int selection;
+        scanner = new Scanner(System.in);
         boolean isLoop = true;
         while (isLoop) {
-            isLoop = false;
-
             System.out.println("Choose from the following options");
             System.out.println("-------------------------\n");
             System.out.println("1 - Register new accommodation");
@@ -59,7 +55,7 @@ public class ManagerApp {
             System.out.println("3 - View registered reservations for your accommodations");
             System.out.println("4 - Quit");
 
-            selection = Integer.parseInt(input.nextLine());
+            int selection = Integer.parseInt(scanner.nextLine());
             switch (selection) {
                 case 1:
                     addAccommodation();
@@ -72,10 +68,10 @@ public class ManagerApp {
                     break;
                 case 4:
                     System.out.println("Closing application.");
+                    isLoop = false;
                     break;
                 default:
                     System.out.println("Invalid input. Please try again.");
-                    isLoop = true;
                     break;
             }
         }
@@ -83,7 +79,7 @@ public class ManagerApp {
 
     private void addAccommodation() throws IOException {
         System.out.println("Insert path to json file:\n");
-        String jsonPath = input.nextLine();
+        String jsonPath = scanner.nextLine();
         managerAppService.addAccommodation(jsonPath);
         mainMenu();
     }
@@ -100,25 +96,25 @@ public class ManagerApp {
             System.out.println("2 - Enter a range of dates");
             System.out.println("3 - Enter dates seperated by commas(\",\")");
             System.out.println("4 - Return");
-            selection = Integer.parseInt(input.nextLine());
+            selection = Integer.parseInt(scanner.nextLine());
 
             switch (selection) {
                 case 1:
                     System.out.println("Insert date (DD-MM-YYYY):\n");
-                    String date = input.nextLine();
+                    String date = scanner.nextLine();
                     managerAppService.addAvailableDate(date);
                     break;
                 case 2:
                     String startDate, endDate;
                     System.out.println("Insert start date (DD-MM-YYYY):\n");
-                    startDate = input.nextLine();
+                    startDate = scanner.nextLine();
                     System.out.println("Insert end date (DD-MM-YYYY):\n");
-                    endDate = input.nextLine();
+                    endDate = scanner.nextLine();
                     managerAppService.addAvailableDates(startDate, endDate);
                     break;
                 case 3:
                     System.out.println("Insert dates (DD-MM-YYYY) seperated by commas (\",\"):\n");
-                    String dates = input.nextLine();
+                    String dates = scanner.nextLine();
                     managerAppService.addAvailableDate(dates);
                     break;
                 case 4:
